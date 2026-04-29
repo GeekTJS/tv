@@ -20,7 +20,7 @@
         android:name=".FamilyTVApplication"
         android:allowBackup="true"
         android:banner="@drawable/banner"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/banner"
         android:label="@string/app_name"
         android:largeHeap="true"
         android:networkSecurityConfig="@xml/network_security_config"
