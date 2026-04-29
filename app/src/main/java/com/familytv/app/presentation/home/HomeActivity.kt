@@ -7,26 +7,21 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.familytv.app.data.local.AppDatabase
 import com.familytv.app.data.model.Category
 import com.familytv.app.data.model.VodItem
-import com.familytv.app.data.repository.VodRepository
 import com.familytv.app.databinding.ActivityHomeBinding
 import com.familytv.app.presentation.detail.DetailActivity
 import com.familytv.app.presentation.search.SearchActivity
+import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
     private lateinit var viewModel: HomeViewModel
-
-    @Inject
-    lateinit var repository: VodRepository
 
     private val categories = listOf(
         Category(1, "电影"),
@@ -61,23 +56,18 @@ class HomeActivity : AppCompatActivity() {
                 tag = category
             }
             binding.tabLayout.addTab(tab)
-            
-            if (index == 0) {
-                tab.view.isFocused
-            }
         }
 
-        binding.tabLayout.addOnTabSelectedListener(object : androidx.viewpager.widget.ViewPager.OnTabSelectedListener {
-            override fun onTabSelected(tab: androidx.viewpager.widget.ViewPager.Tab) {
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab) {
                 val category = tab.tag as Category
                 viewModel.loadVideosByCategory(category.id, 1)
             }
 
-            override fun onTabUnselected(tab: androidx.viewpager.widget.ViewPager.Tab) {}
-            override fun onTabReselected(tab: androidx.viewpager.widget.ViewPager.Tab) {}
+            override fun onTabUnselected(tab: TabLayout.Tab) {}
+            override fun onTabReselected(tab: TabLayout.Tab) {}
         })
 
-        // Load default category
         if (categories.isNotEmpty()) {
             viewModel.loadVideosByCategory(categories[0].id, 1)
         }
@@ -89,7 +79,6 @@ class HomeActivity : AppCompatActivity() {
                 binding.bannerViewPager.adapter = BannerAdapter(banners) { video ->
                     navigateToDetail(video)
                 }
-                binding.bannerIndicator.setViewPager(binding.bannerViewPager)
             }
         }
     }
