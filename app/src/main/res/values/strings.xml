@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">家庭电视</string>
+    <string name="home">首页</string>
+    <string name="movie">电影</string>
+    <string name="series">连续剧</string>
+    <string name="variety">综艺</string>
+    <string name="anime">动漫</string>
+    <string name="search">搜索</string>
+    <string name="favorite">收藏</string>
+    <string name="history">历史</string>
+    <string name="play">播放</string>
+    <string name="detail">详情</string>
+    <string name="episodes">选集</string>
+    <string name="year">年份</string>
+    <string name="area">地区</string>
+    <string name="director">导演</string>
+    <string name="actor">演员</string>
+    <string name="introduction">简介</string>
+    <string name="loading">加载中...</string>
+    <string name="network_error">网络错误，请重试</string>
+    <string name="play_failed">播放失败，请检查网络</string>
+    <string name="no_data">暂无数据</string>
+    <string name="recent_update">近期更新</string>
+    <string name="hot_recommend">热门推荐</string>
+    <string name="clear_history">清除历史</string>
+    <string name="clear_favorite">清除收藏</string>
+    <string name="search_hint">输入影片名称</string>
+    <string name="search_history">搜索历史</string>
+    <string name="play_progress">播放进度</string>
+</resources>
