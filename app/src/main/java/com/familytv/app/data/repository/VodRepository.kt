@@ -3,12 +3,15 @@ package com.familytv.app.data.repository
 import com.familytv.app.data.api.VodApiService
 import com.familytv.app.data.local.FavoriteDao
 import com.familytv.app.data.local.HistoryDao
+import com.familytv.app.data.local.toFavoriteEntity
+import com.familytv.app.data.local.toHistoryEntity
+import com.familytv.app.data.local.toVodItem
 import com.familytv.app.data.model.PlayEpisode
 import com.familytv.app.data.model.VodItem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -86,9 +89,11 @@ class VodRepository @Inject constructor(
         return favoriteDao.getById(id) != null
     }
 
-    fun getFavorites(): Flow<List<VodItem>> = flow {
-        emit(favoriteDao.getAll().map { it.toVodItem() })
-    }.flowOn(Dispatchers.IO)
+    fun getFavorites(): Flow<List<VodItem>> {
+        return favoriteDao.getAll().map { entities ->
+            entities.map { entity -> entity.toVodItem() }
+        }.flowOn(Dispatchers.IO)
+    }
 
     suspend fun addHistory(vodItem: VodItem, episodeIndex: Int, progress: Long) {
         historyDao.insert(vodItem.toHistoryEntity(episodeIndex, progress))
@@ -98,9 +103,11 @@ class VodRepository @Inject constructor(
         historyDao.updateProgress(id, episodeIndex, progress)
     }
 
-    fun getHistories(): Flow<List<VodItem>> = flow {
-        emit(historyDao.getAll().map { it.toVodItem() })
-    }.flowOn(Dispatchers.IO)
+    fun getHistories(): Flow<List<VodItem>> {
+        return historyDao.getAll().map { entities ->
+            entities.map { entity -> entity.toVodItem() }
+        }.flowOn(Dispatchers.IO)
+    }
 
     suspend fun clearHistory() {
         historyDao.deleteAll()
