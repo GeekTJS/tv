@@ -44,6 +44,7 @@ android {
 }
 
 dependencies {
+    def hilt_version = "2.50"
     def leanback_version = "1.0.0"
     def lifecycle_version = "2.7.0"
     def room_version = "2.6.1"
