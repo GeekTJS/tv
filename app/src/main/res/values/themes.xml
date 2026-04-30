@@ -9,6 +9,13 @@
         <item name="android:colorAccent">@color/accent</item>
     </style>
 
+    <style name="Theme.FamilyTV.Mobile" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:colorPrimary">@color/primary</item>
+        <item name="android:colorPrimaryDark">@color/primary_dark</item>
+        <item name="android:colorAccent">@color/accent</item>
+    </style>
+
     <style name="Theme.FamilyTV.Player">
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:windowFullscreen">true</item>
