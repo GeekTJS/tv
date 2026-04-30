@@ -46,6 +46,8 @@ class HomeActivity : AppCompatActivity() {
         setupBanner()
         setupRecommendList()
         setupClickListeners()
+        
+        viewModel.loadBannerVideos()
     }
 
     private fun setupCategoryTabs() {
