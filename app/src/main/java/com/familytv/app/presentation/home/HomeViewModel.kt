@@ -42,13 +42,19 @@ class HomeViewModel @Inject constructor(
 
     private fun loadVideos() {
         viewModelScope.launch {
-            _loadState.value = LoadState.Loading
-            val result = repository.getVideoList(page = currentPage, typeId = currentCategoryId)
-            _loadState.value = if (result.isSuccess) {
-                _videoList.value = result.getOrNull() ?: emptyList()
-                LoadState.Success
-            } else {
-                LoadState.Error(result.exceptionOrNull()?.message ?: "加载失败")
+            try {
+                _loadState.value = LoadState.Loading
+                val result = repository.getVideoList(page = currentPage, typeId = currentCategoryId)
+                _loadState.value = if (result.isSuccess) {
+                    _videoList.value = result.getOrNull() ?: emptyList()
+                    LoadState.Success
+                } else {
+                    _videoList.value = emptyList()
+                    LoadState.Error(result.exceptionOrNull()?.message ?: "加载失败")
+                }
+            } catch (e: Exception) {
+                _videoList.value = emptyList()
+                _loadState.value = LoadState.Error(e.message ?: "网络异常")
             }
         }
     }

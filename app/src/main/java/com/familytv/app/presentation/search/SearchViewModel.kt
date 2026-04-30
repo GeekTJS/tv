@@ -21,7 +21,7 @@ class SearchViewModel @Inject constructor(
     private val _loadState = MutableStateFlow<LoadState>(LoadState.Idle)
     val loadState: StateFlow<LoadState> = _loadState.asStateFlow()
 
-    private lateinit var prefs: SharedPreferences
+    private var prefs: SharedPreferences? = null
     private val HISTORY_KEY = "search_history"
 
     fun init(context: Context) {

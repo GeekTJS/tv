@@ -3,8 +3,8 @@ package com.familytv.app.presentation.detail
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.familytv.app.common.extension.loadImage
@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class DetailActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetailBinding
-    private lateinit var viewModel: DetailViewModel
+    private val viewModel: DetailViewModel by viewModels()
     private lateinit var episodesAdapter: EpisodeAdapter
 
     private var vodId: Long = 0
@@ -30,8 +30,6 @@ class DetailActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         vodId = intent.getLongExtra("vodId", 0)
-
-        viewModel = ViewModelProvider(this)[DetailViewModel::class.java]
 
         setupUI()
         loadDetail()
@@ -64,11 +62,12 @@ class DetailActivity : AppCompatActivity() {
         viewModel.detail.observe(this) { detail ->
             detail?.let {
                 binding.titleTextView.text = it.vodName
-                binding.scoreTextView.text = if (it.vodScore.toDoubleOrNull() ?: 0.0 > 0) String.format("%.1f分", it.vodScore.toDoubleOrNull() ?: 0.0) else ""
+                val score = it.vodScore.toDoubleOrNull() ?: 0.0
+                binding.scoreTextView.text = if (score > 0) String.format("%.1f分", score) else ""
                 binding.yearTextView.text = it.vodYear
                 binding.areaTextView.text = it.vodArea
-                binding.directorTextView.text = getString(com.familytv.app.R.string.director) + ": " + it.vodDirector
-                binding.actorTextView.text = getString(com.familytv.app.R.string.actor) + ": " + it.vodActor
+                binding.directorTextView.text = getString(com.familytv.app.R.string.director) + ": " + (it.vodDirector ?: "")
+                binding.actorTextView.text = getString(com.familytv.app.R.string.actor) + ": " + (it.vodActor ?: "")
                 binding.introTextView.text = it.vodContent
                 binding.backdropImageView.loadImage(it.vodPic)
 
@@ -76,10 +75,13 @@ class DetailActivity : AppCompatActivity() {
                 episodesAdapter.setEpisodes(episodes)
 
                 lifecycleScope.launch {
-                    val progress = viewModel.getHistoryProgress(it.vodId)
-                    if (progress != null) {
-                        viewModel.currentEpisodeIndex = progress.first
-                        episodesAdapter.setSelectedIndex(progress.first)
+                    try {
+                        val progress = viewModel.getHistoryProgress(it.vodId)
+                        if (progress != null) {
+                            viewModel.currentEpisodeIndex = progress.first
+                            episodesAdapter.setSelectedIndex(progress.first)
+                        }
+                    } catch (e: Exception) {
                     }
                 }
             }

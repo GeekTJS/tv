@@ -5,8 +5,8 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.GridLayoutManager
 import com.familytv.app.data.model.VodItem
@@ -20,7 +20,7 @@ import kotlinx.coroutines.launch
 class SearchActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySearchBinding
-    private lateinit var viewModel: SearchViewModel
+    private val viewModel: SearchViewModel by viewModels()
     private lateinit var resultAdapter: SearchResultAdapter
 
     private val searchHistory = mutableListOf<String>()
@@ -30,7 +30,6 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        viewModel = ViewModelProvider(this)[SearchViewModel::class.java]
         viewModel.init(this)
 
         setupUI()

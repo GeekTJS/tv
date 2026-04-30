@@ -3,8 +3,8 @@ package com.familytv.app.presentation.home
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.familytv.app.data.model.Category
@@ -21,7 +21,7 @@ import kotlinx.coroutines.launch
 class HomeActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityHomeBinding
-    private lateinit var viewModel: HomeViewModel
+    private val viewModel: HomeViewModel by viewModels()
 
     private val categories = listOf(
         Category(1, "电影"),
@@ -39,8 +39,6 @@ class HomeActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityHomeBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        viewModel = ViewModelProvider(this)[HomeViewModel::class.java]
 
         setupCategoryTabs()
         setupBanner()
