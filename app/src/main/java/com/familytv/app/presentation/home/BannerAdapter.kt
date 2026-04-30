@@ -26,10 +26,11 @@ class BannerAdapter(
     }
 
     override fun onBindViewHolder(holder: BannerViewHolder, position: Int) {
+        if (banners.isEmpty()) return
         holder.bind(banners[position % banners.size])
     }
 
-    override fun getItemCount() = Int.MAX_VALUE
+    override fun getItemCount() = if (banners.isEmpty()) 0 else Int.MAX_VALUE
 
     inner class BannerViewHolder(
         private val imageView: ImageView
