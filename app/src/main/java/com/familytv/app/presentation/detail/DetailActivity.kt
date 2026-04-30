@@ -64,7 +64,7 @@ class DetailActivity : AppCompatActivity() {
         viewModel.detail.observe(this) { detail ->
             detail?.let {
                 binding.titleTextView.text = it.vodName
-                binding.scoreTextView.text = if (it.vodScore > 0) String.format("%.1f分", it.vodScore) else ""
+                binding.scoreTextView.text = if (it.vodScore.toDoubleOrNull() ?: 0.0 > 0) String.format("%.1f分", it.vodScore.toDoubleOrNull() ?: 0.0) else ""
                 binding.yearTextView.text = it.vodYear
                 binding.areaTextView.text = it.vodArea
                 binding.directorTextView.text = getString(com.familytv.app.R.string.director) + ": " + it.vodDirector

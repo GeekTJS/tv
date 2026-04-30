@@ -197,7 +197,7 @@ class PlayerActivity : AppCompatActivity() {
                         vodPic = intent.getStringExtra("vodPic") ?: "",
                         vodYear = "",
                         vodArea = "",
-                        vodScore = 0.0,
+                        vodScore = "0.0",
                         typeName = "",
                         vodRemarks = "",
                         vodActor = "",
