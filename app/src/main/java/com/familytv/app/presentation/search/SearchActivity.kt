@@ -30,6 +30,8 @@ class SearchActivity : AppCompatActivity() {
         binding = ActivitySearchBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel.init(this)
+
         setupUI()
         observeData()
         loadHistory()
