@@ -88,12 +88,26 @@ class DetailActivity : AppCompatActivity() {
         }
 
         viewModel.isFavorite.observe(this) { isFav ->
-            binding.favoriteButton.isSelected = isFav
+            binding.favoriteButton.isSelected = isFav ?: false
         }
 
         lifecycleScope.launch {
             viewModel.loadState.collectLatest { state ->
-                binding.playButton.visibility = if (state is DetailViewModel.LoadState.Success) View.VISIBLE else View.GONE
+                when (state) {
+                    is DetailViewModel.LoadState.Success -> {
+                        binding.playButton.visibility = View.VISIBLE
+                        binding.loadingView?.visibility = View.GONE
+                    }
+                    is DetailViewModel.LoadState.Loading -> {
+                        binding.playButton.visibility = View.GONE
+                    }
+                    is DetailViewModel.LoadState.Error -> {
+                        binding.playButton.visibility = View.VISIBLE
+                    }
+                    else -> {
+                        binding.playButton.visibility = View.GONE
+                    }
+                }
             }
         }
     }

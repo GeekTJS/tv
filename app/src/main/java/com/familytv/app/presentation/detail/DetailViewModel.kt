@@ -27,15 +27,21 @@ class DetailViewModel @Inject constructor(
 
     fun loadDetail(id: Long) {
         viewModelScope.launch {
-            _loadState.value = LoadState.Loading
-            val result = repository.getVideoDetail(id)
-            if (result.isSuccess) {
-                val video = result.getOrNull()
-                _detail.value = video
-                checkFavorite(id)
-                _loadState.value = LoadState.Success
-            } else {
-                _loadState.value = LoadState.Error(result.exceptionOrNull()?.message ?: "加载失败")
+            try {
+                _loadState.value = LoadState.Loading
+                val result = repository.getVideoDetail(id)
+                if (result.isSuccess) {
+                    val video = result.getOrNull()
+                    _detail.postValue(video)
+                    if (video != null) {
+                        checkFavorite(id)
+                    }
+                    _loadState.value = LoadState.Success
+                } else {
+                    _loadState.value = LoadState.Error(result.exceptionOrNull()?.message ?: "加载失败")
+                }
+            } catch (e: Exception) {
+                _loadState.value = LoadState.Error(e.message ?: "网络异常")
             }
         }
     }
@@ -46,22 +52,33 @@ class DetailViewModel @Inject constructor(
 
     fun toggleFavorite() {
         viewModelScope.launch {
-            val video = _detail.value ?: return@launch
-            if (_isFavorite.value == true) {
-                repository.removeFromFavorite(video.vodId)
-            } else {
-                repository.addToFavorite(video)
+            try {
+                val video = _detail.value ?: return@launch
+                if (_isFavorite.value == true) {
+                    repository.removeFromFavorite(video.vodId)
+                } else {
+                    repository.addToFavorite(video)
+                }
+                checkFavorite(video.vodId)
+            } catch (e: Exception) {
             }
-            checkFavorite(video.vodId)
         }
     }
 
     private suspend fun checkFavorite(id: Long) {
-        _isFavorite.value = repository.isFavorite(id)
+        try {
+            _isFavorite.postValue(repository.isFavorite(id))
+        } catch (e: Exception) {
+            _isFavorite.postValue(false)
+        }
     }
 
     suspend fun getHistoryProgress(id: Long): Pair<Int, Long>? {
-        return repository.getHistoryProgress(id)
+        return try {
+            repository.getHistoryProgress(id)
+        } catch (e: Exception) {
+            null
+        }
     }
 
     sealed class LoadState {

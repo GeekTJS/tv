@@ -45,15 +45,16 @@ class HomeViewModel @Inject constructor(
             try {
                 _loadState.value = LoadState.Loading
                 val result = repository.getVideoList(page = currentPage, typeId = currentCategoryId)
-                _loadState.value = if (result.isSuccess) {
-                    _videoList.value = result.getOrNull() ?: emptyList()
-                    LoadState.Success
+                if (result.isSuccess) {
+                    val list = result.getOrNull() ?: emptyList()
+                    _videoList.postValue(list)
+                    _loadState.value = LoadState.Success
                 } else {
-                    _videoList.value = emptyList()
-                    LoadState.Error(result.exceptionOrNull()?.message ?: "加载失败")
+                    _videoList.postValue(emptyList())
+                    _loadState.value = LoadState.Error(result.exceptionOrNull()?.message ?: "加载失败")
                 }
             } catch (e: Exception) {
-                _videoList.value = emptyList()
+                _videoList.postValue(emptyList())
                 _loadState.value = LoadState.Error(e.message ?: "网络异常")
             }
         }
@@ -61,10 +62,16 @@ class HomeViewModel @Inject constructor(
 
     fun loadBannerVideos() {
         viewModelScope.launch {
-            val result = repository.getVideoList(page = 1, typeId = null)
-            if (result.isSuccess) {
-                val list = result.getOrNull() ?: emptyList()
-                _banners.value = list.take(5)
+            try {
+                val result = repository.getVideoList(page = 1, typeId = null)
+                if (result.isSuccess) {
+                    val list = result.getOrNull() ?: emptyList()
+                    _banners.postValue(list.take(5))
+                } else {
+                    _banners.postValue(emptyList())
+                }
+            } catch (e: Exception) {
+                _banners.postValue(emptyList())
             }
         }
     }

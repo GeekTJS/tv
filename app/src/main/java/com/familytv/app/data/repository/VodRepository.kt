@@ -63,30 +63,46 @@ class VodRepository @Inject constructor(
     fun parseEpisodes(vodItem: VodItem): List<PlayEpisode> {
         val episodes = mutableListOf<PlayEpisode>()
         if (vodItem.vodPlayUrl.isEmpty()) return episodes
-        
+
         val playUrls = vodItem.vodPlayUrl.split("#")
         for (playUrl in playUrls) {
             val parts = playUrl.split("$")
             if (parts.size >= 2) {
-                episodes.add(PlayEpisode(
-                    title = parts[0].trim(),
-                    url = parts[1].trim()
-                ))
+                val title = parts[0].trim()
+                val url = parts[1].trim()
+                if (url.isNotEmpty()) {
+                    episodes.add(PlayEpisode(
+                        title = title,
+                        url = url
+                    ))
+                }
             }
         }
         return episodes
     }
 
     suspend fun addToFavorite(vodItem: VodItem) {
-        favoriteDao.insert(vodItem.toFavoriteEntity())
+        try {
+            favoriteDao.insert(vodItem.toFavoriteEntity())
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     suspend fun removeFromFavorite(id: Long) {
-        favoriteDao.deleteById(id)
+        try {
+            favoriteDao.deleteById(id)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     suspend fun isFavorite(id: Long): Boolean {
-        return favoriteDao.getById(id) != null
+        return try {
+            favoriteDao.getById(id) != null
+        } catch (e: Exception) {
+            false
+        }
     }
 
     fun getFavorites(): Flow<List<VodItem>> {
@@ -96,11 +112,19 @@ class VodRepository @Inject constructor(
     }
 
     suspend fun addHistory(vodItem: VodItem, episodeIndex: Int, progress: Long) {
-        historyDao.insert(vodItem.toHistoryEntity(episodeIndex, progress))
+        try {
+            historyDao.insert(vodItem.toHistoryEntity(episodeIndex, progress))
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     suspend fun updateProgress(id: Long, episodeIndex: Int, progress: Long) {
-        historyDao.updateProgress(id, episodeIndex, progress)
+        try {
+            historyDao.updateProgress(id, episodeIndex, progress)
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     fun getHistories(): Flow<List<VodItem>> {
@@ -110,11 +134,19 @@ class VodRepository @Inject constructor(
     }
 
     suspend fun clearHistory() {
-        historyDao.deleteAll()
+        try {
+            historyDao.deleteAll()
+        } catch (e: Exception) {
+            throw e
+        }
     }
 
     suspend fun getHistoryProgress(id: Long): Pair<Int, Long>? {
-        val entity = historyDao.getById(id)
-        return if (entity != null) Pair(entity.episodeIndex, entity.progress) else null
+        return try {
+            val entity = historyDao.getById(id)
+            if (entity != null) Pair(entity.episodeIndex, entity.progress) else null
+        } catch (e: Exception) {
+            null
+        }
     }
 }

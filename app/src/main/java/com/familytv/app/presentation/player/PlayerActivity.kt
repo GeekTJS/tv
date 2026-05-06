@@ -7,7 +7,6 @@ import android.view.KeyEvent
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
-import com.familytv.app.data.local.AppDatabase
 import com.familytv.app.data.model.PlayEpisode
 import com.familytv.app.data.model.VodItem
 import com.familytv.app.data.repository.VodRepository
@@ -21,14 +20,13 @@ import com.google.android.exoplayer2.upstream.DefaultHttpDataSource
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class PlayerActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPlayerBinding
-    private lateinit var player: ExoPlayer
+    private var player: ExoPlayer? = null
     private var episodes = mutableListOf<PlayEpisode>()
     private var currentEpisodeIndex = 0
     private var vodId: Long = 0
@@ -36,6 +34,7 @@ class PlayerActivity : AppCompatActivity() {
     private val controlBarHandler = Handler(Looper.getMainLooper())
     private val controlBarRunnable = Runnable { hideControlBar() }
     private var isControlBarVisible = false
+    private var isPlayerInitialized = false
 
     @Inject
     lateinit var repository: VodRepository
@@ -56,9 +55,10 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun initializePlayer() {
         player = ExoPlayer.Builder(this).build()
+        isPlayerInitialized = true
         binding.playerView.player = player
 
-        player.addListener(object : Player.Listener {
+        player?.addListener(object : Player.Listener {
             override fun onPlayerError(error: PlaybackException) {
                 showError()
             }
@@ -78,9 +78,11 @@ class PlayerActivity : AppCompatActivity() {
         binding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    val duration = player.duration
-                    val seekPosition = (duration * progress / 100).toLong()
-                    player.seekTo(seekPosition)
+                    val duration = player?.duration ?: 0
+                    if (duration > 0) {
+                        val seekPosition = (duration * progress / 100).toLong()
+                        player?.seekTo(seekPosition)
+                    }
                 }
             }
 
@@ -91,20 +93,26 @@ class PlayerActivity : AppCompatActivity() {
 
     private fun loadVideoDetail() {
         lifecycleScope.launch {
-            val result = repository.getVideoDetail(vodId)
-            if (result.isSuccess) {
-                val video = result.getOrNull()
-                if (video != null) {
-                    episodes.clear()
-                    episodes.addAll(repository.parseEpisodes(video))
+            try {
+                val result = repository.getVideoDetail(vodId)
+                if (result.isSuccess) {
+                    val video = result.getOrNull()
+                    if (video != null) {
+                        episodes.clear()
+                        episodes.addAll(repository.parseEpisodes(video))
 
-                    if (episodes.isNotEmpty() && currentEpisodeIndex < episodes.size) {
-                        playEpisode(currentEpisodeIndex)
+                        if (episodes.isNotEmpty() && currentEpisodeIndex < episodes.size) {
+                            playEpisode(currentEpisodeIndex)
+                        } else {
+                            showError()
+                        }
                     } else {
                         showError()
                     }
+                } else {
+                    showError()
                 }
-            } else {
+            } catch (e: Exception) {
                 showError()
             }
         }
@@ -125,19 +133,20 @@ class PlayerActivity : AppCompatActivity() {
         val mediaItem = MediaItem.fromUri(episode.url)
         val mediaSource = HlsMediaSource.Factory(dataSourceFactory).createMediaSource(mediaItem)
 
-        player.setMediaSource(mediaSource)
-        player.prepare()
-        player.play()
+        player?.setMediaSource(mediaSource)
+        player?.prepare()
+        player?.play()
 
         showControlBar()
     }
 
     private fun setupControlBar() {
         binding.playPauseButton.setOnClickListener {
-            if (player.isPlaying) {
-                player.pause()
+            val p = player ?: return@setOnClickListener
+            if (p.isPlaying) {
+                p.pause()
             } else {
-                player.play()
+                p.play()
             }
             showControlBar()
         }
@@ -188,25 +197,31 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun saveProgress() {
-        if (player.currentPosition > 0) {
+        val p = player ?: return
+        if (!isPlayerInitialized) return
+        val currentPosition = try { p.currentPosition } catch (e: Exception) { return }
+        if (currentPosition > 0) {
             lifecycleScope.launch(Dispatchers.IO) {
-                repository.addHistory(
-                    VodItem(
-                        vodId = vodId,
-                        vodName = vodName,
-                        vodPic = intent.getStringExtra("vodPic") ?: "",
-                        vodYear = "",
-                        vodArea = "",
-                        vodScore = "0.0",
-                        typeName = "",
-                        vodRemarks = "",
-                        vodActor = "",
-                        vodDirector = "",
-                        vodContent = ""
-                    ),
-                    currentEpisodeIndex,
-                    player.currentPosition
-                )
+                try {
+                    repository.addHistory(
+                        VodItem(
+                            vodId = vodId,
+                            vodName = vodName,
+                            vodPic = intent.getStringExtra("vodPic") ?: "",
+                            vodYear = "",
+                            vodArea = "",
+                            vodScore = "0.0",
+                            typeName = "",
+                            vodRemarks = "",
+                            vodActor = "",
+                            vodDirector = "",
+                            vodContent = ""
+                        ),
+                        currentEpisodeIndex,
+                        currentPosition
+                    )
+                } catch (e: Exception) {
+                }
             }
         }
     }
@@ -218,17 +233,27 @@ class PlayerActivity : AppCompatActivity() {
                 true
             }
             KeyEvent.KEYCODE_DPAD_LEFT -> {
-                player.seekTo(player.currentPosition - 10000)
+                val p = player ?: return true
+                val newPosition = (p.currentPosition - 10000).coerceAtLeast(0)
+                p.seekTo(newPosition)
                 showControlBar()
                 true
             }
             KeyEvent.KEYCODE_DPAD_RIGHT -> {
-                player.seekTo(player.currentPosition + 10000)
+                val p = player ?: return true
+                val duration = p.duration
+                val newPosition = if (duration > 0) {
+                    (p.currentPosition + 10000).coerceAtMost(duration)
+                } else {
+                    p.currentPosition + 10000
+                }
+                p.seekTo(newPosition)
                 showControlBar()
                 true
             }
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER -> {
-                if (player.isPlaying) player.pause() else player.play()
+                val p = player ?: return true
+                if (p.isPlaying) p.pause() else p.play()
                 showControlBar()
                 true
             }
@@ -248,7 +273,8 @@ class PlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        player.release()
+        player?.release()
+        player = null
         controlBarHandler.removeCallbacksAndMessages(null)
     }
 }

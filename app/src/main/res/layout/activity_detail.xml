@@ -70,11 +70,15 @@
         </LinearLayout>
     </FrameLayout>
 
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
+        android:layout_weight="1">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -165,5 +169,13 @@
                 android:layout_marginTop="8dp"
                 android:clipToPadding="false" />
         </LinearLayout>
-    </ScrollView>
+        </ScrollView>
+
+        <ProgressBar
+            android:id="@+id/loadingView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:visibility="gone" />
+    </FrameLayout>
 </LinearLayout>

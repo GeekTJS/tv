@@ -30,30 +30,42 @@ class SearchViewModel @Inject constructor(
 
     fun search(keyword: String) {
         viewModelScope.launch {
-            _loadState.value = LoadState.Loading
-            val result = repository.searchVideo(keyword = keyword, page = 1)
-            if (result.isSuccess) {
-                _searchResults.value = result.getOrNull() ?: emptyList()
-                _loadState.value = LoadState.Success
-            } else {
-                _loadState.value = LoadState.Error(result.exceptionOrNull()?.message ?: "搜索失败")
+            try {
+                _loadState.value = LoadState.Loading
+                val result = repository.searchVideo(keyword = keyword, page = 1)
+                if (result.isSuccess) {
+                    _searchResults.postValue(result.getOrNull() ?: emptyList())
+                    _loadState.value = LoadState.Success
+                } else {
+                    _searchResults.postValue(emptyList())
+                    _loadState.value = LoadState.Error(result.exceptionOrNull()?.message ?: "搜索失败")
+                }
+            } catch (e: Exception) {
+                _searchResults.postValue(emptyList())
+                _loadState.value = LoadState.Error(e.message ?: "网络异常")
             }
         }
     }
 
     fun saveHistory(keyword: String) {
         viewModelScope.launch {
-            val history = getHistoryList().toMutableList()
-            history.remove(keyword)
-            history.add(0, keyword)
-            if (history.size > 20) history.removeAt(20)
-            saveHistoryList(history)
+            try {
+                val history = getHistoryList().toMutableList()
+                history.remove(keyword)
+                history.add(0, keyword)
+                if (history.size > 20) history.removeAt(20)
+                saveHistoryList(history)
+            } catch (e: Exception) {
+            }
         }
     }
 
     fun clearHistory() {
         viewModelScope.launch {
-            prefs?.edit()?.remove(HISTORY_KEY)?.apply()
+            try {
+                prefs?.edit()?.remove(HISTORY_KEY)?.apply()
+            } catch (e: Exception) {
+            }
         }
     }
 
@@ -62,14 +74,21 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun getHistoryList(): List<String> {
-        return prefs?.getString(HISTORY_KEY, "")
-            ?.split("|")
-            ?.filter { it.isNotEmpty() }
-            ?: emptyList()
+        return try {
+            prefs?.getString(HISTORY_KEY, "")
+                ?.split("|")
+                ?.filter { it.isNotEmpty() }
+                ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
+        }
     }
 
     private fun saveHistoryList(history: List<String>) {
-        prefs?.edit()?.putString(HISTORY_KEY, history.joinToString("|"))?.apply()
+        try {
+            prefs?.edit()?.putString(HISTORY_KEY, history.joinToString("|"))?.apply()
+        } catch (e: Exception) {
+        }
     }
 
     sealed class LoadState {

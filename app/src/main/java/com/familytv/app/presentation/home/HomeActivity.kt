@@ -76,9 +76,10 @@ class HomeActivity : AppCompatActivity() {
     private fun setupBanner() {
         viewModel.banners.observe(this) { banners ->
             if (banners.isNotEmpty()) {
-                binding.bannerViewPager.adapter = BannerAdapter(banners) { video ->
+                val adapter = BannerAdapter(banners) { video ->
                     navigateToDetail(video)
                 }
+                binding.bannerViewPager.adapter = adapter
             }
         }
     }
