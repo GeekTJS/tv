@@ -54,41 +54,47 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initializePlayer() {
-        player = ExoPlayer.Builder(this).build()
-        isPlayerInitialized = true
-        binding.playerView.player = player
+        try {
+            val playerBuilder = ExoPlayer.Builder(this)
+            player = playerBuilder.build()
+            isPlayerInitialized = true
+            binding.playerView.player = player
 
-        player?.addListener(object : Player.Listener {
-            override fun onPlayerError(error: PlaybackException) {
-                showError()
-            }
-
-            override fun onPlaybackStateChanged(state: Int) {
-                when (state) {
-                    Player.STATE_BUFFERING -> showLoading()
-                    Player.STATE_READY -> hideLoading()
+            player?.addListener(object : Player.Listener {
+                override fun onPlayerError(error: PlaybackException) {
+                    showError()
                 }
-            }
 
-            override fun onIsPlayingChanged(isPlaying: Boolean) {
-                updatePlayPauseIcon(isPlaying)
-            }
-        })
-
-        binding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
-            override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
-                if (fromUser) {
-                    val duration = player?.duration ?: 0
-                    if (duration > 0) {
-                        val seekPosition = (duration * progress / 100).toLong()
-                        player?.seekTo(seekPosition)
+                override fun onPlaybackStateChanged(state: Int) {
+                    when (state) {
+                        Player.STATE_BUFFERING -> showLoading()
+                        Player.STATE_READY -> hideLoading()
                     }
                 }
-            }
 
-            override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
-            override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
-        })
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    updatePlayPauseIcon(isPlaying)
+                }
+            })
+
+            binding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
+                override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
+                    if (fromUser) {
+                        val duration = player?.duration ?: 0
+                        if (duration > 0) {
+                            val seekPosition = (duration * progress / 100).toLong()
+                            player?.seekTo(seekPosition)
+                        }
+                    }
+                }
+
+                override fun onStartTrackingTouch(seekBar: android.widget.SeekBar?) {}
+                override fun onStopTrackingTouch(seekBar: android.widget.SeekBar?) {}
+            })
+        } catch (e: Exception) {
+            showError()
+            return
+        }
     }
 
     private fun loadVideoDetail() {

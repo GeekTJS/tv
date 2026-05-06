@@ -6,13 +6,15 @@ import androidx.lifecycle.*
 import com.familytv.app.data.model.VodItem
 import com.familytv.app.data.repository.VodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository: VodRepository
+    private val repository: VodRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _searchResults = MutableLiveData<List<VodItem>>()
@@ -21,12 +23,8 @@ class SearchViewModel @Inject constructor(
     private val _loadState = MutableStateFlow<LoadState>(LoadState.Idle)
     val loadState: StateFlow<LoadState> = _loadState.asStateFlow()
 
-    private var prefs: SharedPreferences? = null
+    private val prefs: SharedPreferences = context.getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
     private val HISTORY_KEY = "search_history"
-
-    fun init(context: Context) {
-        prefs = context.getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
-    }
 
     fun search(keyword: String) {
         viewModelScope.launch {

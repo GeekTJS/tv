@@ -25,7 +25,7 @@ class VodRepository @Inject constructor(
         return try {
             val response = api.getVideoList(page = page, typeId = typeId)
             if (response.code == 1) {
-                Result.success(response.list)
+                Result.success(response.list ?: emptyList())
             } else {
                 Result.failure(Exception("获取数据失败"))
             }
@@ -37,7 +37,7 @@ class VodRepository @Inject constructor(
     suspend fun getVideoDetail(id: Long): Result<VodItem> {
         return try {
             val response = api.getVideoDetail(id = id)
-            if (response.code == 1 && response.list.isNotEmpty()) {
+            if (response.code == 1 && response.list.orEmpty().isNotEmpty()) {
                 Result.success(response.list.first())
             } else {
                 Result.failure(Exception("获取详情失败"))
@@ -51,7 +51,7 @@ class VodRepository @Inject constructor(
         return try {
             val response = api.searchVideo(keyword = keyword, page = page)
             if (response.code == 1) {
-                Result.success(response.list)
+                Result.success(response.list ?: emptyList())
             } else {
                 Result.failure(Exception("搜索失败"))
             }
