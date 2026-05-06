@@ -54,32 +54,26 @@ class PlayerActivity : AppCompatActivity() {
     }
 
     private fun initializePlayer() {
-        try {
-            val playerBuilder = ExoPlayer.Builder(this)
-            player = playerBuilder.build()
-            isPlayerInitialized = true
-            binding.playerView.player = player
+        player = ExoPlayer.Builder(this).build()
+        isPlayerInitialized = true
+        binding.playerView.player = player
 
-            player?.addListener(object : Player.Listener {
-                override fun onPlayerError(error: PlaybackException) {
-                    showError()
-                }
+        player?.addListener(object : Player.Listener {
+            override fun onPlayerError(error: PlaybackException) {
+                showError()
+            }
 
-                override fun onPlaybackStateChanged(state: Int) {
-                    when (state) {
-                        Player.STATE_BUFFERING -> showLoading()
-                        Player.STATE_READY -> hideLoading()
-                    }
+            override fun onPlaybackStateChanged(state: Int) {
+                when (state) {
+                    Player.STATE_BUFFERING -> showLoading()
+                    Player.STATE_READY -> hideLoading()
                 }
+            }
 
-                override fun onIsPlayingChanged(isPlaying: Boolean) {
-                    updatePlayPauseIcon(isPlaying)
-                }
-            })
-        } catch (e: Exception) {
-            showError()
-            return
-        }
+            override fun onIsPlayingChanged(isPlaying: Boolean) {
+                updatePlayPauseIcon(isPlaying)
+            }
+        })
 
         binding.seekBar.setOnSeekBarChangeListener(object : android.widget.SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: android.widget.SeekBar?, progress: Int, fromUser: Boolean) {
