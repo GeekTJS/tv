@@ -46,7 +46,7 @@ class HomeViewModel @Inject constructor(
                 _loadState.value = LoadState.Loading
                 val result = repository.getVideoList(page = currentPage, typeId = currentCategoryId)
                 if (result.isSuccess) {
-                    val list = result.getOrNull() ?: emptyList()
+                    val list = result.getOrNull().orEmpty()
                     _videoList.postValue(list)
                     _loadState.value = LoadState.Success
                 } else {
@@ -65,7 +65,7 @@ class HomeViewModel @Inject constructor(
             try {
                 val result = repository.getVideoList(page = 1, typeId = null)
                 if (result.isSuccess) {
-                    val list = result.getOrNull() ?: emptyList()
+                    val list = result.getOrNull().orEmpty()
                     _banners.postValue(list.take(5))
                 } else {
                     _banners.postValue(emptyList())

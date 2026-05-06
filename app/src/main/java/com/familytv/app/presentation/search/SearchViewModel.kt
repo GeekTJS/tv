@@ -1,18 +1,20 @@
 package com.familytv.app.presentation.search
 
-import android.content.Context
+import android.app.Application
 import android.content.SharedPreferences
 import androidx.lifecycle.*
 import com.familytv.app.data.model.VodItem
 import com.familytv.app.data.repository.VodRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class SearchViewModel @Inject constructor(
-    private val repository: VodRepository
+    private val repository: VodRepository,
+    @ApplicationContext context: android.content.Context
 ) : ViewModel() {
 
     private val _searchResults = MutableLiveData<List<VodItem>>()
@@ -21,12 +23,8 @@ class SearchViewModel @Inject constructor(
     private val _loadState = MutableStateFlow<LoadState>(LoadState.Idle)
     val loadState: StateFlow<LoadState> = _loadState.asStateFlow()
 
-    private var prefs: SharedPreferences? = null
+    private val prefs: SharedPreferences = context.getSharedPreferences("search_prefs", android.content.Context.MODE_PRIVATE)
     private val HISTORY_KEY = "search_history"
-
-    fun init(context: Context) {
-        prefs = context.getSharedPreferences("search_prefs", Context.MODE_PRIVATE)
-    }
 
     fun search(keyword: String) {
         viewModelScope.launch {
@@ -63,7 +61,7 @@ class SearchViewModel @Inject constructor(
     fun clearHistory() {
         viewModelScope.launch {
             try {
-                prefs?.edit()?.remove(HISTORY_KEY)?.apply()
+                prefs.edit().remove(HISTORY_KEY).apply()
             } catch (e: Exception) {
             }
         }
@@ -75,7 +73,7 @@ class SearchViewModel @Inject constructor(
 
     private fun getHistoryList(): List<String> {
         return try {
-            prefs?.getString(HISTORY_KEY, "")
+            prefs.getString(HISTORY_KEY, "")
                 ?.split("|")
                 ?.filter { it.isNotEmpty() }
                 ?: emptyList()
@@ -86,7 +84,7 @@ class SearchViewModel @Inject constructor(
 
     private fun saveHistoryList(history: List<String>) {
         try {
-            prefs?.edit()?.putString(HISTORY_KEY, history.joinToString("|"))?.apply()
+            prefs.edit().putString(HISTORY_KEY, history.joinToString("|")).apply()
         } catch (e: Exception) {
         }
     }
