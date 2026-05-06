@@ -1,6 +1,6 @@
 package com.familytv.app.presentation.search
 
-import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
 import androidx.lifecycle.*
 import com.familytv.app.data.model.VodItem
@@ -14,7 +14,7 @@ import javax.inject.Inject
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: VodRepository,
-    @ApplicationContext context: android.content.Context
+    @ApplicationContext context: Context
 ) : ViewModel() {
 
     private val _searchResults = MutableLiveData<List<VodItem>>()
