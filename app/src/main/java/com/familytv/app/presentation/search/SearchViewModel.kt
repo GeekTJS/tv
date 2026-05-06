@@ -53,7 +53,7 @@ class SearchViewModel @Inject constructor(
 
     fun clearHistory() {
         viewModelScope.launch {
-            prefs.edit().remove(HISTORY_KEY).apply()
+            prefs?.edit()?.remove(HISTORY_KEY)?.apply()
         }
     }
 
@@ -62,14 +62,14 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun getHistoryList(): List<String> {
-        return prefs.getString(HISTORY_KEY, "")
+        return prefs?.getString(HISTORY_KEY, "")
             ?.split("|")
             ?.filter { it.isNotEmpty() }
             ?: emptyList()
     }
 
     private fun saveHistoryList(history: List<String>) {
-        prefs.edit().putString(HISTORY_KEY, history.joinToString("|")).apply()
+        prefs?.edit()?.putString(HISTORY_KEY, history.joinToString("|"))?.apply()
     }
 
     sealed class LoadState {
